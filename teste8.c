@@ -6,7 +6,7 @@
 
 #define LED_PIN 12       // LED azul do RGB
 #define BUTTON_PIN 5     // Botão A
-#define BUZZER_PIN 10    // Buzzer A
+#define BUZZER_PIN 21    // Buzzer A
 
 void initHardware() {
     gpio_init(LED_PIN);
@@ -23,7 +23,7 @@ void initHardware() {
 }
 
 void playTone(int duration) {
-    duration = duration > 1000 ? 1000 : duration;  // Limita a 1 segundo
+    duration = duration > 5 ? 5 : duration;  // Limita a 1 segundo
     printf("Tocando som por %d ms\n", duration);  // Log para depuração
 
     for (int i = 0; i < duration * 50; i++) {
