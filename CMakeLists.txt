@@ -60,3 +60,17 @@ target_link_libraries(teste8
 
 pico_add_extra_outputs(teste8)
 
+target_link_libraries(teste8 
+    pico_stdlib 
+    hardware_i2c  # <- Adicione esta linha para incluir a biblioteca I2C
+)
+# Define o diretório da biblioteca ssd1306
+include_directories(${CMAKE_SOURCE_DIR}/ssd1306)
+
+# Adiciona a biblioteca ssd1306 como um arquivo compilável
+add_library(ssd1306 libs/ssd1306/ssd1306.c)
+
+# Vincula a biblioteca ao executável principal
+target_link_libraries(${PROJECT_NAME} ssd1306)
+
+
