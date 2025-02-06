@@ -124,9 +124,12 @@ void playCelebrationTone() {
     }
 }
 
-// Função para piscar os LEDs 5 vezes antes de iniciar o jogo
+// Função para piscar os LEDs por 3 segundos antes de reiniciar o jogo
 void blinkLEDs() {
-    for (int i = 0; i < 5; i++) {
+    uint32_t start_time = to_ms_since_boot(get_absolute_time());
+    uint32_t end_time = start_time + 3000;  // 3 segundos
+
+    while (to_ms_since_boot(get_absolute_time()) < end_time) {
         // Pisca todos os LEDs
         gpio_put(LED_R, 1);
         gpio_put(LED_G, 1);
@@ -139,23 +142,55 @@ void blinkLEDs() {
     }
 }
 
-// Função para tocar a melodia de Super Mario Bros
-void playMarioMelody() {
-    // Notas da melodia de Mario Bros (frequências em Hz)
-    int notes[] = {659, 659, 659, 523, 440, 349, 523, 659, 659, 659, 523, 440, 349};
-    // Durações das notas em milissegundos
-    int durations[] = {400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 800};
-    
-    // Toca cada nota da melodia
-    for (int i = 0; i < 13; i++) {
+// Função para tocar um toque inicial simples
+void playStartTone() {
+    int freqs[] = {523, 659, 784, 880};  // Notas simples: C4, E4, G4, A4
+    int durations[] = {400, 400, 400, 400};  // Duração das notas
+
+    // Toca cada nota da sequência inicial
+    for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 100; j++) {
             gpio_put(BUZZER_PIN, 1);
-            sleep_us(1000000 / notes[i] / 2);  // Meia duração da nota (tempo para o som)
+            sleep_us(1000000 / freqs[i] / 2);  // Meia duração da nota (tempo para o som)
             gpio_put(BUZZER_PIN, 0);
-            sleep_us(1000000 / notes[i] / 2);  // Meia duração da nota (tempo para o silêncio)
+            sleep_us(1000000 / freqs[i] / 2);  // Meia duração da nota (tempo para o silêncio)
         }
         sleep_ms(durations[i]);  // Aguarda a duração total da nota
     }
+}
+
+// Função para tocar um som de finalização
+void playEndTone() {
+    int freqs[] = {400, 350, 300};  // Notas descendentes para finalização
+    int durations[] = {500, 500, 1000};  // Duração das notas
+
+    // Toca cada nota da sequência de finalização
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 100; j++) {
+            gpio_put(BUZZER_PIN, 1);
+            sleep_us(1000000 / freqs[i] / 2);  // Meia duração da nota (tempo para o som)
+            gpio_put(BUZZER_PIN, 0);
+            sleep_us(1000000 / freqs[i] / 2);  // Meia duração da nota (tempo para o silêncio)
+        }
+        sleep_ms(durations[i]);  // Aguarda a duração total da nota
+    }
+}
+
+// Função para mostrar as informações iniciais do jogo
+void showGameInfo() {
+    printf("=== Jogo de Reação ===\n");
+    printf("Instruções: O objetivo do jogo é apertar o botão correto quando a cor correspondente do LED aparecer.\n");
+    printf("O tempo de reação é medido e o recorde será mostrado ao final de cada rodada.\n");
+    printf("As cores dos LEDs são:\n");
+    printf("0 - Vermelho - aperto o Botão B\n");
+    printf("1 - Laranja - aperto o Botão B\n");
+    printf("2 - Amarelo - aperto o Botão A\n");
+    printf("3 - Verde - aperto o Botão B\n");
+    printf("4 - Azul - aperto o Botão B\n");
+    printf("5 - Anil - aperto o Botão A\n");
+    printf("6 - Violeta - aperto o Botão A\n");
+    printf("Prepare-se para iniciar o jogo!\n");
+    printf("======================\n");
 }
 
 // Função principal do jogo
@@ -167,9 +202,9 @@ void startGame() {
         int current_led = led_state;
         setRainbowColor(current_led);
         absolute_time_t start = get_absolute_time();
-        //printf("Aguardando botão...\n");
 
-        int correct_button = (current_led == 0 || current_led == 3) ? BUTTON_B : BUTTON_A;  
+        // Modifica para que o botão B acione o LED azul
+        int correct_button = (current_led == 4) ? BUTTON_B : (current_led == 0 || current_led == 3) ? BUTTON_B : BUTTON_A;  
 
         while (gpio_get(correct_button) == 1) {
             if (gpio_get(BUTTON_A) == 0 && correct_button != BUTTON_A) {
@@ -201,7 +236,9 @@ void startGame() {
             playCelebrationTone();  // Toca o som de celebração
         }
 
-        //printf("Aguardando soltar botão...\n");
+        // Exibe o tempo recorde após cada rodada
+        printf("Tempo recorde do jogo: %d ms\n", best_reaction_time);
+
         while (gpio_get(correct_button) == 0);
         sleep_ms(500);
 
@@ -211,9 +248,13 @@ void startGame() {
 
     printf("Fim do jogo! Você completou 5 rodadas.\n");
 
+    // Toca o som de finalização
+    playEndTone();
+
     // Reinicia o jogo após 10 segundos
     sleep_ms(10000);
     printf("Reiniciando o jogo...\n");
+    blinkLEDs();  // Pisca os LEDs antes de reiniciar
     rodada_count = 0;  // Reinicia o contador de rodadas
     best_reaction_time = 10000;  // Reinicia o recorde de tempo
     startGame();  // Reinicia o jogo
@@ -222,14 +263,15 @@ void startGame() {
 int main() {
     stdio_init_all();
     initHardware();
-    printf("Jogo Iniciado!\n");
 
-    // Toque a melodia de Mario Bros ao iniciar o jogo
-    playMarioMelody();
+    // Toque inicial simples
+    playStartTone();
 
-    // Pisca os LEDs 5 vezes antes de começar o jogo
-    blinkLEDs();
+    // Exibe as informações do jogo
+    showGameInfo();
 
+    // Começa o jogo
     startGame();
+
     return 0;
 }
