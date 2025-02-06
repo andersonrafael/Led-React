@@ -1,3 +1,10 @@
+/*
+
+// ******************************************************************
+// **************** Jogo Led React v.1.3 **************************** 
+// ******************************************************************
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "pico/stdlib.h"
@@ -273,5 +280,162 @@ int main() {
     // Começa o jogo
     startGame();
 
+    return 0;
+}
+
+
+*/
+
+
+// ******************************************************************
+// **************** Jogo Led React v.1.4 **************************** 
+// ******************************************************************
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "pico/stdlib.h"
+#include "hardware/gpio.h"
+#include "hardware/timer.h"
+
+#define LED_R 13     
+#define LED_G 11     
+#define LED_B 12     
+#define BUTTON_A 5   
+#define BUTTON_B 6   
+#define BUZZER_PIN 21  
+
+int led_state = 0;    
+int rodada_count = 0;  
+int best_reaction_time = 10000; 
+
+// Matriz para armazenar os melhores tempos das últimas 5 rodadas
+int rank[5][5] = {10000};  
+
+void initHardware() {
+    gpio_init(LED_R);
+    gpio_set_dir(LED_R, GPIO_OUT);
+    gpio_put(LED_R, 0);
+
+    gpio_init(LED_G);
+    gpio_set_dir(LED_G, GPIO_OUT);
+    gpio_put(LED_G, 0);
+
+    gpio_init(LED_B);
+    gpio_set_dir(LED_B, GPIO_OUT);
+    gpio_put(LED_B, 0);
+
+    gpio_init(BUTTON_A);
+    gpio_set_dir(BUTTON_A, GPIO_IN);
+    gpio_pull_up(BUTTON_A);
+
+    gpio_init(BUTTON_B);
+    gpio_set_dir(BUTTON_B, GPIO_IN);
+    gpio_pull_up(BUTTON_B);
+
+    gpio_init(BUZZER_PIN);
+    gpio_set_dir(BUZZER_PIN, GPIO_OUT);
+    gpio_put(BUZZER_PIN, 0);
+}
+
+void playTone(int duration) {
+    duration = duration > 5 ? 5 : duration;
+    for (int i = 0; i < duration * 50; i++) {
+        gpio_put(BUZZER_PIN, 1);
+        sleep_us(500);
+        gpio_put(BUZZER_PIN, 0);
+        sleep_us(500);
+    }
+}
+
+void playEndTone() {
+    int freqs[] = {400, 350, 300};
+    int durations[] = {500, 500, 1000};
+
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 100; j++) {
+            gpio_put(BUZZER_PIN, 1);
+            sleep_us(1000000 / freqs[i] / 2);
+            gpio_put(BUZZER_PIN, 0);
+            sleep_us(1000000 / freqs[i] / 2);
+        }
+        sleep_ms(durations[i]);
+    }
+}
+
+void showRanking() {
+    printf("\n===== RANKING DAS ULTIMAS 5 RODADAS =====\n");
+    for (int i = 0; i < 5; i++) {
+        printf("Rodada %d: ", i + 1);
+        for (int j = 0; j < 5; j++) {
+            if (rank[i][j] == 10000) continue;
+            printf("%d ms | ", rank[i][j]);
+        }
+        printf("\n");
+    }
+    printf("=========================================\n");
+}
+
+// Função para armazenar e ordenar os tempos no ranking
+void updateRanking(int rodada, int time) {
+    if (time >= 10000) return;
+
+    // Inserir novo tempo na rodada e ordenar
+    rank[rodada][4] = time; 
+
+    // Ordenação simples (Bubble Sort)
+    for (int i = 4; i > 0; i--) {
+        if (rank[rodada][i] < rank[rodada][i - 1]) {
+            int temp = rank[rodada][i];
+            rank[rodada][i] = rank[rodada][i - 1];
+            rank[rodada][i - 1] = temp;
+        }
+    }
+}
+
+// Função principal do jogo
+void startGame() {
+    while (rodada_count < 5) {
+        printf("Rodada %d: Prepare-se...\n", rodada_count + 1);
+        sleep_ms(rand() % 3000 + 2000);
+
+        absolute_time_t start = get_absolute_time();
+        while (gpio_get(BUTTON_A) && gpio_get(BUTTON_B)); 
+        absolute_time_t end = get_absolute_time();
+
+        int reaction_time = absolute_time_diff_us(start, end) / 1000;
+        printf("Tempo de reação: %d ms\n", reaction_time);
+
+        playTone(reaction_time);
+        
+        // Atualiza o melhor tempo geral
+        if (reaction_time < best_reaction_time) {
+            best_reaction_time = reaction_time;
+            printf("Novo recorde geral! Tempo: %d ms\n", best_reaction_time);
+        }
+
+        // Atualiza o ranking da rodada atual
+        updateRanking(rodada_count, reaction_time);
+        
+        rodada_count++;
+    }
+
+    printf("Fim do jogo! Você completou 5 rodadas.\n");
+
+    // Mostra o ranking final antes de reiniciar
+    showRanking();
+    
+    playEndTone();
+    
+    sleep_ms(10000);
+    printf("Reiniciando o jogo...\n");
+    rodada_count = 0;  
+    best_reaction_time = 10000;  
+    startGame();  
+}
+
+int main() {
+    stdio_init_all();
+    initHardware();
+    startGame();
     return 0;
 }
