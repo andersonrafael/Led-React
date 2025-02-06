@@ -59,13 +59,3 @@ target_link_libraries(teste8
         )
 
 pico_add_extra_outputs(teste8)
-
-<<<<<<< Updated upstream
-=======
-
-
-
-
-
-
->>>>>>> Stashed changes
