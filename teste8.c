@@ -103,7 +103,7 @@ void playTone(int duration) {
 
 // Função para tocar som de erro (descendente)
 void playErrorTone() {
-    printf("Opa! botão errado\n");
+    printf("**** :( Opa! botão errado ****\n");
 
     int freqs[] = {1000, 800, 600, 400, 200};  // Tons descendentes
     for (int i = 0; i < 5; i++) {
@@ -199,7 +199,7 @@ void showGameInfo() {
     printf("5 - Anil - aperte o Botão A\n");
     printf("6 - Violeta - aperte o Botão A\n");
     printf("******* Prepare-se para iniciar o jogo! *******\n");
-    printf("***************************************\n");
+    printf("***********************************************\n");
 }
 
 // Função para ordenar os tempos em ordem crescente
@@ -270,12 +270,12 @@ void startGame() {
         // Verifica se o jogador bateu o recorde global
         if (reaction_time < best_reaction_time) {
             best_reaction_time = reaction_time;
-            printf("Wow!! Novo recorde! Tempo: %d ms\n", best_reaction_time);
+            printf(" :) Wow!! Novo recorde! Tempo: %d ms\n", best_reaction_time);
             playCelebrationTone();  // Toca o som de celebração
         }
 
         // Exibe o tempo recorde após cada rodada
-        printf("Tempo recorde do jogo: %d ms\n", best_reaction_time);
+        printf("***** Tempo recorde do jogo: %d ms *****\n", best_reaction_time);
 
         while (gpio_get(correct_button) == 0);
         sleep_ms(500);
@@ -284,7 +284,7 @@ void startGame() {
         rodada_count++;  // Incrementa o contador de rodadas
     }
 
-    printf("Fim do jogo! Você completou 5 rodadas.\n");
+    printf(" >>>>> Fim do jogo! Você completou 5 rodadas. <<<<<\n");
 
     // Armazena o melhor tempo do jogo atual no array de melhores tempos
     if (game_count < 5) {
@@ -306,7 +306,7 @@ void startGame() {
 
     // Reinicia o jogo após 10 segundos
     sleep_ms(10000);
-    printf("Reiniciando o jogo...\n");
+    printf("***** Reiniciando o jogo... *****\n");
     blinkLEDs();  // Pisca os LEDs antes de reiniciar
     rodada_count = 0;  // Reinicia o contador de rodadas
     best_reaction_time = 10000;  // Reinicia o recorde de tempo
