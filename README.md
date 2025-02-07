@@ -115,4 +115,7 @@ https://wokwi.com/projects/422175428422596609
 ![projeto final embarcatech](https://github.com/user-attachments/assets/02588312-e27e-433a-8bf7-2fe0f6811440)
 
  * O projeto no simulador wokwi teve o led RGB substituido pelos leds VERMELHO, AZUL E VERDE por critério de funcionalidades
- * do simulador.
+do simulador:
+Execução do jogo no wokwi:
+Ao acender apenas os leds vermelho, azul e verde o jogador deverá clicar no botão verde
+quando acender dois leds simutaneos o jogador deverá clicar no botão vermelho
