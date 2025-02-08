@@ -118,4 +118,4 @@ https://wokwi.com/projects/422175428422596609
 do simulador:
 Execução do jogo no wokwi:
 Ao acender apenas os leds vermelho, azul e verde o jogador deverá clicar no botão verde
-quando acender dois leds simutaneos o jogador deverá clicar no botão vermelho
+quando acender dois leds simutâneos o jogador deverá clicar no botão vermelho
